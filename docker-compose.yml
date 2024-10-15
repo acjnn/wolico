@@ -10,7 +10,8 @@ services:
       APP_PORT: 3000
       JWT_SECRET: 023G7tg2N3fh0SGavlHRn209q3Z
     depends_on:
-      - postgres-wolico
+      postgres-wolico:
+        condition: service_healthy
 
   postgres-wolico:
     image: postgres
@@ -22,6 +23,11 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U admin -d wolico" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
   postgres_data:

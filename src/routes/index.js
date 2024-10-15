@@ -9,12 +9,11 @@ const loadRoutes = () => {
         .filter(file => file !== 'index.js' && file.endsWith('.js'))
         .forEach(file => {
             const routeName = file.replace('.js', '');
-            const route = require(path.join(__dirname, file));
-            routes[`${routeName}`] = route;
+            routes[`${routeName}`] = require(path.join(__dirname, file));
         });
     return routes;
 };
 
 
 /** MODULE EXPORT **/
-module.exports = loadRoutes();
+module.exports = loadRoutes;

@@ -15,7 +15,7 @@ console.log('Dependencies Imported');
 
 /** API & DB IMPORT **/
 // Importing all APIs and DB
-const routes = require('./routes');
+const routes = require('./routes')();
 const initDB = require('./utils/init');
 console.log('APIs Imported');
 
@@ -75,7 +75,7 @@ async function main() {
                 app.use(`/api/${path}`, route);
                 i++;
             } else {
-                console.error(`Failed to load route ${path}, not a Route`);
+                console.error(`Failed to load route ${path}, not a Route. Received type: ${typeof route}`);
             }
         });
         console.log(`Loaded ${i} Routes`);

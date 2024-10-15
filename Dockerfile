@@ -1,4 +1,4 @@
-FROM node:18
+FROM node:22.8.0
 LABEL authors="AcjnN"
 
 # Set working dir in the container
