@@ -1,20 +1,18 @@
-# Express Wolico
+# Express for Wolico
 
-
+This app takes crypto data and offers various aggregations
 
 ### Table of Contents
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
 - [Usage](#usage)
-- [Permissions](#permissions)
 - [API Endpoints](#api-endpoints)
-- [Authentication](#authentication)
 
 ## Getting started
 
 ### Prerequisites
 To run the app locally, make sure you have the following installed on your system:
-- [Node.js](https://nodejs.org) (version 14 or higher)
+- [Node.js](https://nodejs.org) (version 22)
 - [Postgres](https://www.postgresql.org/) (running instance or connection string)
 
 ### Installation
@@ -49,7 +47,9 @@ To run the app locally, make sure you have the following installed on your syste
 ## API Endpoints
 The app provides several API endpoints for performing various operations:
 
-### Run & Install PostgreSQL
+___
+
+## Run & Install PostgreSQL
 Remember to change the <postgres_data> volume to an actual directory in your host.
    ```bash
    docker run --name postgres-wolico \
