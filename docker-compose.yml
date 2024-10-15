@@ -1,0 +1,33 @@
+version: '3'
+
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      POSTGRES_URI: postgresql://admin:wolico@postgres-wolico:5432/wolico
+      APP_PORT: 3000
+      JWT_SECRET: 023G7tg2N3fh0SGavlHRn209q3Z
+    depends_on:
+      - postgres-wolico
+
+  postgres-wolico:
+    image: postgres
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: wolico
+      POSTGRES_DB: wolico
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
+#    driver: local
+#    driver_opts:
+#      type: none
+#      o: bind
+#      device: C:/path/to/dir
+

@@ -1,0 +1,36 @@
+{
+  "name": "wolico",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/App.js",
+  "scripts": {
+    "start": "node src/App.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/acjnn/wolico.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/acjnn/wolico/issues"
+  },
+  "homepage": "https://github.com/acjnn/wolico#readme",
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
+    "express-validator": "^7.2.0",
+    "helmet": "^8.0.0",
+    "jsdom": "^25.0.1",
+    "jsonwebtoken": "^9.0.2",
+    "morgan": "^1.10.0",
+    "papaparse": "^5.4.1",
+    "sequelize": "^6.37.4",
+    "pg": "^8.13.0",
+    "cookie-parser": "^1.4.7"
+  }
+}
