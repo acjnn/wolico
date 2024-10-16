@@ -15,7 +15,7 @@ console.log('Dependencies Imported');
 
 /** API & DB IMPORT **/
 // Importing all APIs and DB
-const routes = require('./routes')();
+const routes = require('./routes');
 const initDB = require('./utils/init');
 console.log('APIs Imported');
 
@@ -69,19 +69,14 @@ async function main() {
         // API LOADING
         let i = 0;
         Object.entries(routes).forEach(([path, route]) => {
-            if (route instanceof express.Router) {
-                console.log(`Loading ${path} api`);
-                // Setting up route
-                app.use(`/api/${path}`, route);
-                i++;
-            } else {
-                console.error(`Failed to load route ${path}, not a Route. Received type: ${typeof route}`);
-            }
+            console.log(`Loading ${path} api`);
+            app.use(`/api/${path}`, route);
+            i++;
         });
         console.log(`Loaded ${i} Routes`);
 
         // APPLICATION RUNNING
-        const port = process.env.APP_PORT;
+        const port = process.env.APP_PORT || 3000;
         // Port Selection
         app.listen(port, '0.0.0.0', () => {
             // Port Opened
@@ -98,7 +93,7 @@ async function main() {
             } catch (error) {
                 console.error('Error during shutdown:', error);
                 process.exit(1);
-                // Check connection pools
+                // Check any open connection
             }
         });
 

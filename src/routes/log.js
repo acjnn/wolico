@@ -14,7 +14,7 @@ router.get('/api', async (req, res) => {
     if (!startDate && !endDate)
         return res.status(400).json({error: 'Specify a date range'});
 
-    // we should add isValidDate check
+    // FIXME add a isValidDate
 
     let where = {};
     where.type = TYPE.API;
@@ -24,7 +24,7 @@ router.get('/api', async (req, res) => {
         if (startDate) where.date[Op.gte] = new Date(startDate);
         if (endDate) where.date[Op.lte] = new Date(endDate);
         const twoMonths = 60 * 24 * 60 * 60 * 1000;
-        if (end - start > twoMonths)
+        if (endDate - startDate > twoMonths)
             return res.status(400).json({ error: 'Date range exceeds 2 months' });
     }
 

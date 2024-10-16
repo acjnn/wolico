@@ -3,7 +3,11 @@ const { Sequelize } = require('sequelize');
 
 const postgres = new Sequelize(
     process.env.POSTGRES_URI,
-    { dialect: 'postgres' , pool: { max:10, min:0, idle: 10000, acquire: 30000 }}
+    {
+        dialect: 'postgres' ,
+        pool: { max:10, min:0, idle: 10000, acquire: 30000 },
+        logging: false
+    }
 );
 
 

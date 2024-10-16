@@ -1,22 +1,30 @@
-export async function process() {
-    console.log('This is an Example Job!');
-    try {
-        // Retrieve UUID from arguments
-        const jobId = process.argv[2];
-        if (!jobId)
-            throw new Error('Job ID is missing');
+import {log, TYPE} from "../utils/log.js";
 
-        console.log(`Running job with ID: ${jobId}`);
+
+export async function main(jobId) {
+    try {
+        if (!jobId) throw new Error('Job ID is missing');
+        await log(jobId, 'This is a test job.', TYPE.JOB);
 
         // Async wait test
         await new Promise((resolve) =>
-            setTimeout(resolve, 5000)
+            setTimeout(resolve, 3000)
         );
+        await log(jobId, `Simulating a job run...`, TYPE.JOB);
 
-        console.log(`Job ${jobId} completed successfully!`);
-        process.exit(0); // simulate completed
+        await new Promise((resolve) =>
+            setTimeout(resolve, 3000)
+        );
+        await log(jobId, `Test completed successfully!`, TYPE.JOB);
+
+        process.exit(0); // simulate job complete
     } catch (error) {
         console.error(`Job failed: ${error.message}`);
-        process.exit(1); // simulate failed
+        process.exit(1); // simulate job fail
     }
+}
+
+
+if (process.argv[2]) {
+    main(process.argv[2]);
 }

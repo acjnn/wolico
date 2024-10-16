@@ -16,4 +16,4 @@ const loadRoutes = () => {
 
 
 /** MODULE EXPORT **/
-module.exports = loadRoutes;
+module.exports = loadRoutes();

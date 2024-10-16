@@ -2,6 +2,18 @@ const { DataTypes } = require('sequelize');
 const { postgres } = require('../DB');
 
 
+const SOURCE = Object.freeze({
+    API: 'API',
+    JOB: 'JOB',
+    OTHER: 'OTHER'
+})
+
+const TYPE = Object.freeze({
+    ERROR: 'Error',
+    LOG: 'Log',
+    WARN: 'Warn'
+})
+
 /** LOGGING TO POSTGRESQL */
 const Log = postgres.define('Log', {
     date: {
@@ -9,20 +21,31 @@ const Log = postgres.define('Log', {
         defaultValue: DataTypes.NOW,
         allowNull: false
     },
-    source: {
+    sourceID: {
         type: DataTypes.STRING,
         allowNull: false
     },
-    type: {
+    sourceType: {
         type: DataTypes.ENUM('API', 'JOB', 'OTHER'),
         allowNull: false
+    },
+    logType: {
+        type: DataTypes.ENUM('Error', 'Log', 'Warn'),
+        allowNull: true,
+        defaultValue: 'Log'
     },
     body: {
         type: DataTypes.TEXT,
         allowNull: false
     }
+}, {
+    timestamps: false
 });
 
 
 /** MODULE EXPORT */
-module.exports = Log;
+module.exports = {
+    SOURCE,
+    TYPE,
+    Log
+};

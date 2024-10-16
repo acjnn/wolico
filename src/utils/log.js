@@ -1,23 +1,24 @@
-const Log = require('../models/log');
-
-
-const TYPE = Object.freeze({
-    API: 'API',
-    JOB: 'JOB',
-    OTHER: 'OTHER'
-})
+const {Log, TYPE, SOURCE} = require("../models/log");
 
 
 /** LOGGING TO POSTGRES */
-const log = async (source, type, body) => {
-    if (!Object.values(TYPE).includes(type)) {
-        console.error('Invalid log type:', type);
+const log = async (sourceID,sourceType,body,logType=TYPE.LOG) => {
+
+    if (!Object.values(TYPE).includes(logType)) {
+        console.error('Invalid log type:', logType);
         return;
     }
+
+    if (!Object.values(SOURCE).includes(sourceType)) {
+        console.error('Invalid log type:', sourceType);
+        return;
+    }
+
     try {
         await Log.create({
-            source: source,
-            type: type,
+            sourceID: sourceID,
+            sourceType: sourceType,
+            logType: logType,
             body: body
         });
     } catch (error) {
@@ -25,9 +26,19 @@ const log = async (source, type, body) => {
     }
 };
 
+const logJob = async (sourceID,logType,body) => {
+    await log(sourceID,SOURCE.JOB,body,logType);
+}
+const logApi = async (sourceID,logType,body) => {
+    await log(sourceID,SOURCE.API,body,logType);
+}
+const logOther = async (sourceID,logType,body) => {
+    await log(sourceID,SOURCE.OTHER,body,logType);
+}
 
 /** MODULE EXPORT */
 module.exports = {
-    TYPE,
-    log
+    logJob,
+    logApi,
+    logOther
 };

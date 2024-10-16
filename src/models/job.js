@@ -39,6 +39,8 @@ const Job = postgres.define('Job', {
         type: DataTypes.INTEGER,
         allowNull: true
     }
+}, {
+    timestamps: false
 });
 
 
