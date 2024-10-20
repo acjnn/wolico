@@ -1,8 +1,7 @@
 const express = require('express');
-const Log = require('../models/log');
+const { Log, SOURCE } = require('../models/log');
 const router = express.Router();
 const { Op } = require('sequelize');
-const {TYPE} = require("../utils/log");
 
 
 router.use(express.json());
@@ -17,8 +16,8 @@ router.get('/api', async (req, res) => {
     // FIXME add a isValidDate
 
     let where = {};
-    where.type = TYPE.API;
-    if (source) where.source = source;
+    where.sourceType = SOURCE.API;
+    if (source) where.sourceID = source;
     if (startDate || endDate) {
         where.date = {};
         if (startDate) where.date[Op.gte] = new Date(startDate);
@@ -48,8 +47,8 @@ router.get('/job/:uuid', async (req, res) => {
         return res.status(400).json({error: 'Specify the job UUID'});;
 
     let where = {};
-    where.type = TYPE.JOB;
-    where.source = uuid;
+    where.sourceType = SOURCE.JOB;
+    where.sourceID = uuid;
 
     try {
         const logs = await Log.findAll({

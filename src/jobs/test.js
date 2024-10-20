@@ -1,21 +1,23 @@
-import {log, TYPE} from "../utils/log.js";
+import { logJob } from "../utils/log.js";
+import { TYPE } from "../models/log.js";
+
 
 
 export async function main(jobId) {
     try {
         if (!jobId) throw new Error('Job ID is missing');
-        await log(jobId, 'This is a test job.', TYPE.JOB);
+        await logJob(jobId, TYPE.JOB, 'This is a test job.');
 
         // Async wait test
         await new Promise((resolve) =>
             setTimeout(resolve, 3000)
         );
-        await log(jobId, `Simulating a job run...`, TYPE.JOB);
+        await logJob(jobId, TYPE.JOB, `Simulating a job run...`);
 
         await new Promise((resolve) =>
             setTimeout(resolve, 3000)
         );
-        await log(jobId, `Test completed successfully!`, TYPE.JOB);
+        await logJob(jobId, TYPE.JOB, `Test completed successfully!`);
 
         process.exit(0); // simulate job complete
     } catch (error) {
