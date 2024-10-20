@@ -6,22 +6,22 @@ import { TYPE } from "../models/log.js";
 export async function main(jobId) {
     try {
         if (!jobId) throw new Error('Job ID is missing');
-        await logJob(jobId, TYPE.JOB, 'This is a test job.');
+        await logJob(jobId, 'This is a test job.');
 
         // Async wait test
         await new Promise((resolve) =>
             setTimeout(resolve, 3000)
         );
-        await logJob(jobId, TYPE.JOB, `Simulating a job run...`);
+        await logJob(jobId, `Simulating a job run...`);
 
         await new Promise((resolve) =>
             setTimeout(resolve, 3000)
         );
-        await logJob(jobId, TYPE.JOB, `Test completed successfully!`);
+        await logJob(jobId, `Test completed successfully!`);
 
         process.exit(0); // simulate job complete
     } catch (error) {
-        console.error(`Job failed: ${error.message}`);
+        await logJob(jobId, `Job failed: ${error.message}`, TYPE.ERROR);
         process.exit(1); // simulate job fail
     }
 }

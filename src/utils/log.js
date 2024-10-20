@@ -2,7 +2,7 @@ const {Log, TYPE, SOURCE} = require("../models/log");
 
 
 /** LOGGING TO POSTGRES */
-const log = async (sourceID,sourceType,body,logType=TYPE.LOG) => {
+const log = async (sourceID,sourceType,body,logType) => {
 
     if (!Object.values(TYPE).includes(logType)) {
         console.error('Invalid log type:', logType);
@@ -26,13 +26,13 @@ const log = async (sourceID,sourceType,body,logType=TYPE.LOG) => {
     }
 };
 
-const logJob = async (sourceID,logType,body) => {
+const logJob = async (sourceID,body,logType=TYPE.LOG) => {
     await log(sourceID,SOURCE.JOB,body,logType);
 }
-const logApi = async (sourceID,logType,body) => {
+const logApi = async (sourceID,body,logType=TYPE.LOG) => {
     await log(sourceID,SOURCE.API,body,logType);
 }
-const logOther = async (sourceID,logType,body) => {
+const logOther = async (sourceID,body,logType=TYPE.LOG) => {
     await log(sourceID,SOURCE.OTHER,body,logType);
 }
 
