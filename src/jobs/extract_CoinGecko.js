@@ -11,14 +11,14 @@ import {Op} from "sequelize";
 const apiKey = process.env.CG_API;
 const jobId = process.argv[2];
 const urlBase = 'https://api.coingecko.com/api/v3/';
-const rankThreshold = 50;
+const rankThreshold = 100;
 const timeLength = 30
 
 // Core Fetch Method with retry
 async function fetchData(endpoint) {
     const maxRetries = 5;
     let retries = 0;
-    await new Promise(resolve => setTimeout(resolve, 250));
+    await new Promise(resolve => setTimeout(resolve, 500));
     while (retries < maxRetries) {
         const response = await fetch(urlBase+endpoint);
         if (response.status === 429) {
@@ -62,7 +62,8 @@ export async function getHistory(crypto,date) {
 
 /** MAIN */
 export async function main() {
-    await logJob(jobId, `Starting Coin Gecko Data Extraction.`);
+    const now = new Date();
+    await logJob(jobId, `Starting Coin Gecko Data Extraction: ${formatDate(now)}`);
 
     // Fetch and store today's global market information.
     const marketData = await getMarket();
@@ -106,7 +107,6 @@ export async function main() {
 
     // Download last N days of historical data for ranked and trending coins.
     const rankedTrendingCoins = await Coin.findAll({ where: { rank: { [Op.not]: null }, isTrending: true } });
-    const now = new Date();
 
     for (const coin of rankedTrendingCoins) {
         for (let i = 0; i < timeLength; i++) {
@@ -118,7 +118,7 @@ export async function main() {
                 }
             });
             if (existingHisto) {
-                await logJob(jobId, `Skipping ${coin.id}'s history for date: ${formatDate(date)} as it already exists.`);
+                await logJob(jobId, `Skipping ${coin.id}'s history for date: ${formatDate(date)} as it already exists.`, TYPE.VERB);
                 continue;
             }
             const historyData = await getHistory(coin.id, date);

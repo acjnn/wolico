@@ -11,7 +11,7 @@ function isoFormatDate(date) {
 }
 
 function subtractDays(rawDate, days) {
-    const resultDate = rawDate instanceof Date ? rawDate : new Date(rawDate);
+    const resultDate = new Date(rawDate); // Clone date
     resultDate.setDate(resultDate.getDate() - days);
     return resultDate;
 }

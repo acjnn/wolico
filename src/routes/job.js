@@ -6,7 +6,7 @@ const { run, list } = require('../utils/job');
 const router = express.Router();
 
 
-router.get('/run/:name', (req, res) => {
+router.get('/run/:name', async (req, res) => {
     const { name } = req.params;
     const jobId = uuidv4();
     // TODO
@@ -26,7 +26,7 @@ router.get('/run/:name', (req, res) => {
 });
 
 
-router.get('/list', (req, res) => {
+router.get('/list', async (req, res) => {
     try {
         // FIXME
         // we should not only return the list of jobs but the state

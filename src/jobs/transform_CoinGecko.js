@@ -6,6 +6,7 @@ import {Histo} from "../models/histo.js";
 import {Coin} from "../models/coin.js";
 import {Market} from "../models/market.js";
 
+
 const jobId = process.argv[2];
 
 
@@ -90,23 +91,24 @@ async function calculateVolatility(coin_id) {
 
 /** MAIN */
 async function main() {
-    await logJob(jobId, `Starting Price and Market Cap Change Calculation Job.`);
+    await logJob(jobId, `Starting Job.`);
 
     // Find all distinct coins in the Histo table
     const distinctCoins = await Coin.findAll({
         attributes: ['id'],
         group: ['id']
     });
+    await logJob(jobId, `Retrieved ${distinctCoins.length} Coins.`);
 
     for (const coin of distinctCoins) {
-        await calculateChangesForCoin(coin.coin_id);
+        await calculateChangesForCoin(coin.id);
     }
-    await logJob(jobId, `Completed Price and Market Cap Change Calculation Job.`);
+    await logJob(jobId, `Completed Price and Market Cap Change Calculation.`);
 
     for (const coin of distinctCoins) {
-        await calculateVolatility(coin.coin_id);
+        await calculateVolatility(coin.id);
     }
-    await logJob(jobId, `Completed Price and Market Cap Change Calculation Job.`);
+    await logJob(jobId, `Completed Volatility Calculation.`);
 }
 
 
