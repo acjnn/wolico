@@ -18,7 +18,7 @@ To quickly build and test the app, if Docker and Docker compose are present in t
    ```
 
 ### Prerequisites
-To run the app on localhost, make sure you have the following installed on your system:
+To run the app locally, make sure you have the following installed on your system:
 - [Node.js](https://nodejs.org) (tested on version 22)
 - [Postgres](https://www.postgresql.org/) (running instance or connection string)
 - [npm](https://www.npmjs.com/) (tested on version 10)
@@ -43,16 +43,23 @@ To run the app on localhost, make sure you have the following installed on your 
 1. Clone and Rename the `.env.example` file to `.env` and update the environment variables:
     - `POSTGRES_URI`: Provide the connection string for your PostgreSQL instance.
     - `APP_PORT` : Your desired port number 
+    - `CG_API` : Coin Gecko API
 
 2. Start the app:
    ```bash
    npm start
    ```
 
-3. The app will be accessible at `http://localhost:<APP_PORT>`.
+3. The endpoints will be accessible at `http://localhost:<APP_PORT>`.
 
 ## API Endpoints
 The app provides several API endpoints for performing various operations:
+- /api/crypto/hottest
+- /api/crypto/top_movers
+- /api/job/run/<jobName>
+- /api/job/list
+- /api/log/job/<jobId>
+- /api/log/api?startDate=<date>&endDate=<date>
 
 ___
 
