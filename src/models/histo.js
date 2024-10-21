@@ -17,16 +17,11 @@ const Histo = postgres.define('Histo', {
         type: DataTypes.FLOAT
     },
     market_cap_usd: {
-        type: DataTypes.BIGINT
+        type: DataTypes.FLOAT  // Changed to FLOAT
     },
     total_volume_usd: {
-        type: DataTypes.BIGINT
+        type: DataTypes.FLOAT  // Changed to FLOAT
     },
-
-    // must add this data afterward (transform)
-    // because api "history" doesn't have it...
-    // and coins/data doesn't allow date param
-
     price_change_24h_usd: {
         type: DataTypes.FLOAT
     },
@@ -34,7 +29,7 @@ const Histo = postgres.define('Histo', {
         type: DataTypes.FLOAT
     },
     market_cap_change_24h_usd: {
-        type: DataTypes.BIGINT
+        type: DataTypes.FLOAT  // Changed to FLOAT
     },
     market_cap_change_percentage_24h: {
         type: DataTypes.FLOAT

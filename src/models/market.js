@@ -1,5 +1,5 @@
-import {postgres} from "../DB";
-import {DataTypes} from "sequelize";
+const { DataTypes } = require('sequelize');
+const { postgres } = require('../DB');
 
 
 const Market = postgres.define('Market', {

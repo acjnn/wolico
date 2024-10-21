@@ -2,15 +2,15 @@ import {logJob} from "../utils/log.js";
 import {TYPE} from "../models/log.js";
 import {formatDate, subtractDays} from "../utils/dates.js";
 import {Coin} from "../models/coin.js";
+import {Histo} from "../models/histo.js";
+import {Market} from "../models/market.js";
 import {Op} from "sequelize";
-
 
 // We use the app process env but we could load a local env:
 // dotenv.config({ path: path.resolve(__dirname, '../jobs/.env') });
 const apiKey = process.env.CG_API;
 const jobId = process.argv[2];
 const urlBase = 'https://api.coingecko.com/api/v3/';
-const ccy = 'usd'
 
 // Core Fetch Method
 async function fetchData(endpoint) {
@@ -46,18 +46,19 @@ export async function getTrending() {
 
 // Get total market catp and other global info.
 export async function getMarket() {
-    await logJob(jobId, `Fetching market DAta.`);
+    await logJob(jobId, `Fetching market Data.`);
     return await fetchData(`global`);
 }
 
 // Get the historical data at a given date for a coin.
 export async function getHistory(crypto,date) {
     const formattedDate = formatDate(date);
-    await logJob(jobId, `Fetching ${crypto}'s history for date: ${formattedDate}.`);
-    return await fetchData(`coins/${crypto}/history?${formattedDate}`);
+    // await logJob(jobId, `Fetching ${crypto}'s history for date: ${formattedDate}.`);
+    return await fetchData(`coins/${crypto}/history?date=${formattedDate}`);
 }
 
 export async function main() {
+
     // get top 50 crypto using getAllCoins()
     // each coin in the array has "market_cap_rank"
     // we use that to order and filter rank > 50
@@ -68,16 +69,17 @@ export async function main() {
     // 'trending' data to null to keep the db clean
     await Coin.update({ rank: null, isTrending: null }, { where: {} });
     const allCoins = await getAllCoins('usd');
-    const topCoins = allCoins.filter(coin => coin.rank <= 50);
+    const topCoins = allCoins.filter(coin => coin.market_cap_rank <= 50);
 
     for (const coin of topCoins) {
         await Coin.upsert({
             id: coin.id,
             symbol: coin.symbol,
             name: coin.name,
-            rank: coin.rank
+            rank: coin.market_cap_rank
         });
     }
+
     // after that use the 'trending' api to extract
     // all trending data and only update the column
     // in the db of the already inserted coins that
@@ -85,36 +87,37 @@ export async function main() {
     const trendingData = await getTrending();
     for (const trendingCoin of trendingData.coins) {
         const trending = trendingCoin.item;
+        if (!trending || !trending.id) continue;
         await Coin.update(
             { isTrending: true },
-            { where: { id: trending.item.id, rank: { [Op.not]: null } } }
+            { where: { id: trending.id, rank: { [Op.not]: null } } }
         );
     }
+
     // after that download the last 7 days of data
     // using the getHistory (starting from date.now)
     // of the coins that have a rank and are trending
     const rankedTrendingCoins = await Coin.findAll({ where: { rank: { [Op.not]: null }, isTrending: true } });
     const now = new Date();
-
     for (const coin of rankedTrendingCoins) {
         for (let i = 0; i < 7; i++) {
-            const date = subtractDays(now, i);  // Get the date for each of the past 7 days
+            const date = subtractDays(now, i);  // Get dates of past week
             const historyData = await getHistory(coin.id, date);
-
             await Histo.upsert({
                 coin_id: coin.id,
-                date: formatDate(date),
+                date: date,
                 price_usd: historyData.market_data.current_price.usd,
                 market_cap_usd: historyData.market_data.market_cap.usd,
                 total_volume_usd: historyData.market_data.total_volume.usd,
             });
         }
     }
+
     // finally use the getMarket to get todays
     // global market info
     const marketData = await getMarket();
     await Market.upsert({
-        date: formatDate(now),
+        date: now,
         active_cryptocurrencies: marketData.data.active_cryptocurrencies,
         total_market_cap_usd: marketData.data.total_market_cap.usd,
         total_volume_usd: marketData.data.total_volume.usd,
