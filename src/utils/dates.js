@@ -4,3 +4,6 @@ export function formatDate(date) {
 }
 
 
+export function subtractDays() {
+
+}

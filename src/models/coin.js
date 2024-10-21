@@ -15,6 +15,12 @@ const Coin = postgres.define('Coin', {
     name: {
         type: DataTypes.STRING,
         allowNull: false
+    },
+    rank: {
+        type: DataTypes.INTEGER
+    },
+    isTrending: {
+        type: DataTypes.BOOLEAN
     }
 }, {
     timestamps: false
