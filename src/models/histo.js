@@ -17,10 +17,10 @@ const Histo = postgres.define('Histo', {
         type: DataTypes.FLOAT
     },
     market_cap_usd: {
-        type: DataTypes.FLOAT  // Changed to FLOAT
+        type: DataTypes.FLOAT
     },
     total_volume_usd: {
-        type: DataTypes.FLOAT  // Changed to FLOAT
+        type: DataTypes.FLOAT
     },
     price_change_24h_usd: {
         type: DataTypes.FLOAT
@@ -29,18 +29,9 @@ const Histo = postgres.define('Histo', {
         type: DataTypes.FLOAT
     },
     market_cap_change_24h_usd: {
-        type: DataTypes.FLOAT  // Changed to FLOAT
+        type: DataTypes.FLOAT
     },
     market_cap_change_percentage_24h: {
-        type: DataTypes.FLOAT
-    },
-    circulating_supply: {
-        type: DataTypes.FLOAT
-    },
-    total_supply: {
-        type: DataTypes.FLOAT
-    },
-    max_supply: {
         type: DataTypes.FLOAT
     }
 }, {

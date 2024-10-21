@@ -12,7 +12,7 @@ const apiKey = process.env.CG_API;
 const jobId = process.argv[2];
 const urlBase = 'https://api.coingecko.com/api/v3/';
 const rankThreshold = 50;
-const timeLength = 14
+const timeLength = 30
 
 // Core Fetch Method with retry
 async function fetchData(endpoint) {
@@ -59,8 +59,23 @@ export async function getHistory(crypto,date) {
     return await fetchData(`coins/${crypto}/history?date=${formattedDate}`);
 }
 
+
+/** MAIN */
 export async function main() {
     await logJob(jobId, `Starting Coin Gecko Data Extraction.`);
+
+    // Fetch and store today's global market information.
+    const marketData = await getMarket();
+    await Market.upsert({
+        date: now,
+        active_cryptocurrencies: marketData.data.active_cryptocurrencies,
+        total_market_cap_usd: marketData.data.total_market_cap.usd,
+        total_volume_usd: marketData.data.total_volume.usd,
+        btc_market_cap_percentage: marketData.data.market_cap_percentage.btc,
+        eth_market_cap_percentage: marketData.data.market_cap_percentage.eth,
+        market_cap_change_percentage_24h_usd: marketData.data.market_cap_change_percentage_24h_usd
+    });
+    await logJob(jobId, `Added global market data.`);
 
     // Get top 50 cryptocurrencies, update database with new coins and ranks.
     await Coin.update({ rank: null, isTrending: false }, { where: {} });
@@ -92,9 +107,20 @@ export async function main() {
     // Download last N days of historical data for ranked and trending coins.
     const rankedTrendingCoins = await Coin.findAll({ where: { rank: { [Op.not]: null }, isTrending: true } });
     const now = new Date();
+
     for (const coin of rankedTrendingCoins) {
         for (let i = 0; i < timeLength; i++) {
             const date = subtractDays(now, i);
+            const existingHisto = await Histo.findOne({
+                where: {
+                    coin_id: coin.id,
+                    date: date,
+                }
+            });
+            if (existingHisto) {
+                await logJob(jobId, `Skipping ${coin.id}'s history for date: ${formatDate(date)} as it already exists.`);
+                continue;
+            }
             const historyData = await getHistory(coin.id, date);
             await Histo.upsert({
                 coin_id: coin.id,
@@ -107,24 +133,12 @@ export async function main() {
     }
     await logJob(jobId, `Added new historical data.`);
 
-    // Fetch and store today's global market information.
-    const marketData = await getMarket();
-    await Market.upsert({
-        date: now,
-        active_cryptocurrencies: marketData.data.active_cryptocurrencies,
-        total_market_cap_usd: marketData.data.total_market_cap.usd,
-        total_volume_usd: marketData.data.total_volume.usd,
-        btc_market_cap_percentage: marketData.data.market_cap_percentage.btc,
-        eth_market_cap_percentage: marketData.data.market_cap_percentage.eth,
-        market_cap_change_percentage_24h_usd: marketData.data.market_cap_change_percentage_24h_usd
-    });
-    await logJob(jobId, `Added global market data.`);
-
     // All Steps Done
     await logJob(jobId, `Process Completed.`);
 }
 
 
+/** PROCESS START */
 if (process.argv[2] && process.env.CG_API) {
     main();
 } else {
