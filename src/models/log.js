@@ -11,7 +11,8 @@ const SOURCE = Object.freeze({
 const TYPE = Object.freeze({
     ERROR: 'Error',
     LOG: 'Log',
-    WARN: 'Warn'
+    WARN: 'Warn',
+    VERB: 'Verb'
 })
 
 /** LOGGING TO POSTGRESQL */
@@ -30,7 +31,7 @@ const Log = postgres.define('Log', {
         allowNull: false
     },
     logType: {
-        type: DataTypes.ENUM('Error', 'Log', 'Warn'),
+        type: DataTypes.ENUM('Error', 'Log', 'Warn', 'Verb'),
         allowNull: true,
         defaultValue: 'Log'
     },

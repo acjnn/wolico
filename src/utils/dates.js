@@ -1,10 +1,9 @@
 function formatDate(rawDate) {
-    const date = typeof rawDate === 'object' && rawDate instanceof Date ? rawDate : new Date(rawDate);
-    return new Intl.DateTimeFormat('en-GB', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric'
-    }).format(date).replace(/\//g, '-');
+    const date = rawDate instanceof Date ? rawDate : new Date(rawDate);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
 }
 
 function isoFormatDate(date) {
@@ -12,7 +11,7 @@ function isoFormatDate(date) {
 }
 
 function subtractDays(rawDate, days) {
-    const resultDate = typeof rawDate === 'object' && rawDate instanceof Date ? rawDate : new Date(rawDate);
+    const resultDate = rawDate instanceof Date ? rawDate : new Date(rawDate);
     resultDate.setDate(resultDate.getDate() - days);
     return resultDate;
 }

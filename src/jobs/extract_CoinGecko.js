@@ -11,25 +11,27 @@ import {Op} from "sequelize";
 const apiKey = process.env.CG_API;
 const jobId = process.argv[2];
 const urlBase = 'https://api.coingecko.com/api/v3/';
+const rankThreshold = 50;
+const timeLength = 14
 
-// Core Fetch Method
+// Core Fetch Method with retry
 async function fetchData(endpoint) {
-    try {
-        const response = await fetch(`${urlBase}${endpoint}`, {
-            method: 'GET',
-            headers: {
-                'Accept': 'application/json',
-                'x-cg-demo-api-key': apiKey
-            }
-        });
-        if (!response.ok)
+    const maxRetries = 5;
+    let retries = 0;
+    await new Promise(resolve => setTimeout(resolve, 250));
+    while (retries < maxRetries) {
+        const response = await fetch(urlBase+endpoint);
+        if (response.status === 429) {
+            const retryAfter = response.headers.get('Retry-After') || 1;
+            await new Promise(resolve => setTimeout(resolve, retryAfter * 1000));
+            retries++;
+        } else if (response.ok) {
+            return await response.json();
+        } else {
             throw new Error(`HTTP error! status: ${response.status}`);
-        return await response.json();
-    } catch (error) {
-        console.error('Error:', error);
-        await logJob(jobId,`Error fetching endpoint: ${endpoint}`, TYPE.ERROR);
-        throw error;
+        }
     }
+    throw new Error('Max retries reached');
 }
 
 // Get all supported coins with price, market cap, volume and market data.
@@ -53,23 +55,17 @@ export async function getMarket() {
 // Get the historical data at a given date for a coin.
 export async function getHistory(crypto,date) {
     const formattedDate = formatDate(date);
-    // await logJob(jobId, `Fetching ${crypto}'s history for date: ${formattedDate}.`);
+    await logJob(jobId, `Fetching ${crypto}'s history for date: ${formattedDate}.`, TYPE.VERB);
     return await fetchData(`coins/${crypto}/history?date=${formattedDate}`);
 }
 
 export async function main() {
+    await logJob(jobId, `Starting Coin Gecko Data Extraction.`);
 
-    // get top 50 crypto using getAllCoins()
-    // each coin in the array has "market_cap_rank"
-    // we use that to order and filter rank > 50
-    // only get the 'name' 'id' and 'symbol' data
-    // put in db so it adds new coins and updates
-    // already inserted coin's rank. we before-hand
-    // reset any existing coin 'rank' and
-    // 'trending' data to null to keep the db clean
-    await Coin.update({ rank: null, isTrending: null }, { where: {} });
+    // Get top 50 cryptocurrencies, update database with new coins and ranks.
+    await Coin.update({ rank: null, isTrending: false }, { where: {} });
     const allCoins = await getAllCoins('usd');
-    const topCoins = allCoins.filter(coin => coin.market_cap_rank <= 50);
+    const topCoins = allCoins.filter(coin => coin.market_cap_rank <= rankThreshold);
 
     for (const coin of topCoins) {
         await Coin.upsert({
@@ -79,11 +75,9 @@ export async function main() {
             rank: coin.market_cap_rank
         });
     }
+    await logJob(jobId, `Updated Coin Records.`);
 
-    // after that use the 'trending' api to extract
-    // all trending data and only update the column
-    // in the db of the already inserted coins that
-    // have a rank (where rank != null)
+    // Extract trending data and update trending status for ranked coins.
     const trendingData = await getTrending();
     for (const trendingCoin of trendingData.coins) {
         const trending = trendingCoin.item;
@@ -93,15 +87,14 @@ export async function main() {
             { where: { id: trending.id, rank: { [Op.not]: null } } }
         );
     }
+    await logJob(jobId, `Updated Trending Coins.`);
 
-    // after that download the last 7 days of data
-    // using the getHistory (starting from date.now)
-    // of the coins that have a rank and are trending
+    // Download last N days of historical data for ranked and trending coins.
     const rankedTrendingCoins = await Coin.findAll({ where: { rank: { [Op.not]: null }, isTrending: true } });
     const now = new Date();
     for (const coin of rankedTrendingCoins) {
-        for (let i = 0; i < 7; i++) {
-            const date = subtractDays(now, i);  // Get dates of past week
+        for (let i = 0; i < timeLength; i++) {
+            const date = subtractDays(now, i);
             const historyData = await getHistory(coin.id, date);
             await Histo.upsert({
                 coin_id: coin.id,
@@ -112,9 +105,9 @@ export async function main() {
             });
         }
     }
+    await logJob(jobId, `Added new historical data.`);
 
-    // finally use the getMarket to get todays
-    // global market info
+    // Fetch and store today's global market information.
     const marketData = await getMarket();
     await Market.upsert({
         date: now,
@@ -125,6 +118,10 @@ export async function main() {
         eth_market_cap_percentage: marketData.data.market_cap_percentage.eth,
         market_cap_change_percentage_24h_usd: marketData.data.market_cap_change_percentage_24h_usd
     });
+    await logJob(jobId, `Added global market data.`);
+
+    // All Steps Done
+    await logJob(jobId, `Process Completed.`);
 }
 
 
