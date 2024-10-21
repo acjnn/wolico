@@ -11,7 +11,17 @@ const router = express.Router();
 
 router.get('/top_movers', async (req, res) => {
     try {
-        // Get the last 3 days' biggest movers
+        // Get last 3 days' biggest price changes
+        /**
+         * SELECT coin_id,
+         *        SUM(price_change_24h_usd) AS total_price_change
+         * FROM Histo
+         * WHERE date >= CURRENT_DATE - INTERVAL '3 day'
+         *   AND price_change_24h_usd IS NOT NULL
+         * GROUP BY coin_id
+         * ORDER BY total_price_change DESC
+         * LIMIT 5;
+         */
         const topMovers = await Histo.findAll({
             attributes: [
                 'coin_id',
@@ -30,7 +40,7 @@ router.get('/top_movers', async (req, res) => {
             limit: 5
         });
 
-        // Join with Coin data to return more information about the coin
+        // Join Coin data to return more info
         const topMoversWithDetails = await Promise.all(
             topMovers.map(async (mover) => {
                 const coin = await Coin.findOne({where: {id: mover.coin_id}});
@@ -51,7 +61,7 @@ router.get('/top_movers', async (req, res) => {
 
 router.get('/hottest', async (req, res) => {
     try {
-        // Get the top 5 coins based on price change in the last 24 hours
+        // Get top 5 coins based on price change
         const hottestCoins = await Histo.findAll({
             attributes: ['coin_id', 'price_change_24h_usd'],
             where: {
@@ -63,7 +73,7 @@ router.get('/hottest', async (req, res) => {
             limit: 5
         });
 
-        // Join with Coin data to return more information about the coin
+        // Join Coin data to return more info
         const hottestWithDetails = await Promise.all(
             hottestCoins.map(async (coin) => {
                 const coinDetails = await Coin.findOne({where: {id: coin.coin_id}});
