@@ -11,42 +11,42 @@ const router = express.Router();
 
 router.get('/top_movers', async (req, res) => {
     try {
-        // Get last 3 days' biggest price changes
+        // Get last 3 days' biggest market cap changes
         /**
          * SELECT coin_id,
-         *        SUM(price_change_24h_usd) AS total_price_change
+         *        SUM(market_cap_change_24h_usd) AS total_market_change
          * FROM Histo
          * WHERE date >= CURRENT_DATE - INTERVAL '3 day'
-         *   AND price_change_24h_usd IS NOT NULL
+         *   AND market_cap_change_24h_usd IS NOT NULL
          * GROUP BY coin_id
-         * ORDER BY total_price_change DESC
+         * ORDER BY total_market_change DESC
          * LIMIT 5;
          */
         const topMovers = await Histo.findAll({
             attributes: [
                 'coin_id',
-                [postgres.fn('SUM', postgres.col('price_change_24h_usd')), 'total_price_change']
+                [postgres.fn('SUM', postgres.col('market_cap_change_24h_usd')), 'total_market_change']
             ],
             where: {
                 date: {
                     [Op.gte]: postgres.literal("CURRENT_DATE - INTERVAL '3 day'")
                 },
-                price_change_24h_usd: {
+                market_cap_change_24h_usd: {
                     [Op.not]: null
                 }
             },
             group: ['coin_id'],
-            order: [[postgres.literal('total_price_change'), 'DESC']],
+            order: [[postgres.literal('total_market_change'), 'DESC']],
             limit: 5
         });
 
-        // Join Coin data to return more info
+        // Joined with Coin data to return more info
         const topMoversWithDetails = await Promise.all(
             topMovers.map(async (mover) => {
                 const coin = await Coin.findOne({where: {id: mover.coin_id}});
                 return {
                     ...coin.dataValues,
-                    total_price_change: mover.dataValues.total_price_change
+                    total_market_change: mover.dataValues.total_market_change
                 };
             })
         );
@@ -63,13 +63,13 @@ router.get('/hottest', async (req, res) => {
     try {
         // Get top 5 coins based on price change
         const hottestCoins = await Histo.findAll({
-            attributes: ['coin_id', 'price_change_24h_usd'],
+            attributes: ['coin_id', 'price_change_percentage_24h'],
             where: {
-                price_change_24h_usd: {
+                price_change_percentage_24h: {
                     [Op.not]: null
                 }
             },
-            order: [['price_change_24h_usd', 'DESC']],
+            order: [['price_change_percentage_24h', 'DESC']],
             limit: 5
         });
 
@@ -79,7 +79,7 @@ router.get('/hottest', async (req, res) => {
                 const coinDetails = await Coin.findOne({where: {id: coin.coin_id}});
                 return {
                     ...coinDetails.dataValues,
-                    price_change_24h_usd: coin.price_change_24h_usd
+                    price_change_percentage_24h: coin.price_change_percentage_24h
                 };
             })
         );

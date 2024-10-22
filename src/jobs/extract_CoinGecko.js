@@ -20,7 +20,11 @@ async function fetchData(endpoint) {
     let retries = 0;
     await new Promise(resolve => setTimeout(resolve, 500));
     while (retries < maxRetries) {
-        const response = await fetch(urlBase+endpoint);
+        const response = await fetch(urlBase+endpoint, {
+            headers: {
+                'x-cg-demo-api-key': apiKey
+            }
+        });
         if (response.status === 429) {
             const retryAfter = response.headers.get('Retry-After') || 1;
             await new Promise(resolve => setTimeout(resolve, retryAfter * 1000));
@@ -100,6 +104,8 @@ export async function main() {
         if (!trending || !trending.id) continue;
         await Coin.update(
             { isTrending: true },
+            // Instead of matching already present coins (ranked) we could just insert new coins
+            // this would grow the list of available coins and potentially increase the time series download
             { where: { id: trending.id, rank: { [Op.not]: null } } }
         );
     }
@@ -107,6 +113,8 @@ export async function main() {
 
     // Download last N days of historical data for ranked and trending coins.
     const rankedTrendingCoins = await Coin.findAll({ where: { rank: { [Op.not]: null }, isTrending: true } });
+    // The above filtering could be very restrictive,
+    // we could remove a condition to get more time series
 
     for (const coin of rankedTrendingCoins) {
         for (let i = 0; i < timeLength; i++) {
@@ -139,7 +147,7 @@ export async function main() {
 
 
 /** PROCESS START */
-if (process.argv[2] && process.env.CG_API) {
+if (process.argv[2] && apiKey) {
     main();
 } else {
     await logJob(jobId, `Could not start job.\nPlease, add a coin gecko api key.`, TYPE.ERROR);
